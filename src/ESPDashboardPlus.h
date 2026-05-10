@@ -1128,6 +1128,7 @@ private:
            
            if (_cards.find(cardId) != _cards.end()) {
                _cards[cardId]->handleAction(action, dataObj);
+               broadcastUpdate(cardId, dataObj);
                
                // Handle OTA actions
 #if defined(ARDUINO_ARCH_ESP32)
