@@ -333,12 +333,13 @@ public:
     std::vector<ChartSeries> series;
     ChartType chartType;
     int maxDataPoints;
+    String unit;
     
     // Legacy single-series data (for backwards compatibility)
     std::vector<float> data;
     
-    ChartCard(const String& id, const String& title, ChartType type = ChartType::LINE, int maxPoints = 20)
-        : DashboardCard(id, CardType::CHART, title), chartType(type), maxDataPoints(maxPoints) {}
+    ChartCard(const String& id, const String& title, const String& unit = "", ChartType type = ChartType::LINE, int maxPoints = 20)
+        : DashboardCard(id, CardType::CHART, title), chartType(type), maxDataPoints(maxPoints), unit(unit) {}
     
     void toJson(JsonObject& card) override {
         card["id"] = id;
@@ -346,6 +347,7 @@ public:
         card["weight"] = weight;
         JsonObject config = card.createNestedObject("config");
         config["title"] = title;
+        config["unit"] = unit;
         config["chartType"] = chartTypeToString(chartType);
         config["color"] = variantToString(variant);
         if (sizeX > 1) config["sizeX"] = sizeX;
@@ -1239,7 +1241,7 @@ private:
    }
      
     void sendCardsToClient(AsyncWebSocketClient* client) {
-        DynamicJsonDocument doc(8192);
+        DynamicJsonDocument doc(32768);
         doc["type"] = "init";
         doc["title"] = _title;
         if (_subtitle.length() > 0) {
@@ -1508,8 +1510,8 @@ using ESPDashboard = ESPDashboardPlus;
          return card;
      }
      
-     ChartCard* addChartCard(const String& id, const String& title, ChartType type = ChartType::LINE, int maxPoints = 20) {
-         ChartCard* card = new ChartCard(id, title, type, maxPoints);
+     ChartCard* addChartCard(const String& id, const String& title, const String& unit, ChartType type = ChartType::LINE, int maxPoints = 20) {
+         ChartCard* card = new ChartCard(id, title, unit, type, maxPoints);
          _cards[id] = card;
          return card;
      }
@@ -1716,7 +1718,7 @@ using ESPDashboard = ESPDashboardPlus;
          if (card && card->type == CardType::CHART) {
              card->addDataPoint(value);
              
-             DynamicJsonDocument doc(2048);
+             DynamicJsonDocument doc(8192);
              JsonObject data = doc.to<JsonObject>();
              JsonArray dataArr = data["data"].to<JsonArray>();
              for (float v : card->data) {
@@ -1732,7 +1734,7 @@ using ESPDashboard = ESPDashboardPlus;
          if (card && card->type == CardType::CHART) {
              card->addDataPoint(seriesIndex, value);
              
-             DynamicJsonDocument doc(4096);
+             DynamicJsonDocument doc(16384);
              JsonObject data = doc.to<JsonObject>();
              JsonArray seriesArr = data["series"].to<JsonArray>();
              for (const ChartSeries& s : card->series) {
