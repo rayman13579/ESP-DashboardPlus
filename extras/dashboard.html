@@ -801,82 +801,86 @@
       text-decoration: none;
     }
 
-    .btn:active {
+    .btn:disabled {
+      cursor: default;
+    }
+
+    .btn:active:enabled {
       transform: scale(0.97);
     }
 
-    .btn-primary {
+    .btn-primary:enabled {
       background: var(--gradient-primary);
       color: var(--bg);
       box-shadow: 0 4px 16px -4px var(--primary-glow);
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:enabled {
       box-shadow: 0 8px 24px -4px var(--primary-glow);
       filter: brightness(1.1);
     }
 
-    .btn-success {
+    .btn-success:enabled {
       background: var(--success);
       color: var(--bg);
       box-shadow: 0 4px 16px -4px var(--success-glow);
     }
 
-    .btn-success:hover {
+    .btn-success:hover:enabled {
       box-shadow: 0 8px 24px -4px var(--success-glow);
       filter: brightness(1.1);
     }
 
-    .btn-warning {
+    .btn-warning:enabled {
       background: var(--warning);
       color: var(--bg);
       box-shadow: 0 4px 16px -4px var(--warning-glow);
     }
 
-    .btn-warning:hover {
+    .btn-warning:hover:enabled {
       box-shadow: 0 8px 24px -4px var(--warning-glow);
       filter: brightness(1.1);
     }
 
-    .btn-danger {
+    .btn-danger:enabled {
       background: var(--danger);
       color: white;
       box-shadow: 0 4px 16px -4px var(--danger-glow);
     }
 
-    .btn-danger:hover {
+    .btn-danger:hover:enabled {
       box-shadow: 0 8px 24px -4px var(--danger-glow);
       filter: brightness(1.1);
     }
 
-    .btn-info {
+    .btn-info:enabled {
       background: var(--info);
       color: white;
       box-shadow: 0 4px 16px -4px var(--info-glow);
     }
 
-    .btn-info:hover {
+    .btn-info:hover:enabled {
       box-shadow: 0 8px 24px -4px var(--info-glow);
       filter: brightness(1.1);
     }
 
-    .btn-secondary {
+    .btn-secondary:enabled {
       background: var(--bg-secondary);
       color: var(--text);
       border: 1px solid var(--border);
     }
 
-    .btn-secondary:hover {
+    .btn-secondary:hover:enabled:enabled {
       background: var(--border);
     }
 
-    .btn-outline {
+    .btn-outline:enabled {
       background: transparent;
       color: var(--primary);
       border: 1px solid var(--primary);
     }
 
-    .btn-outline:hover {
+    .btn-outline:hover:enabled {
       background: rgba(0, 212, 170, 0.1);
     }
 
@@ -2354,7 +2358,7 @@
           return `
             <div class="card" data-id="${id}" style="${sizeStyle}"><div class="update-indicator"></div>
               <div class="card-title">${config.title || 'Button'}</div>
-              <button class="btn btn-${config.variant || 'primary'}" onclick="sendAction('${id}', 'click')">
+              <button class="btn btn-${config.variant || 'primary'}" onclick="sendAction('${id}', 'click')" ${config.enabled ? '' : 'disabled'}>
                 ${config.icon ? `<span>${config.icon}</span>` : ''}
                 ${config.label || 'Click'}
               </button>
@@ -2838,6 +2842,19 @@
             break;
           }
 
+          case 'button': {
+            const buttonEl = el.querySelector('button');
+            if (buttonEl) {
+              if (config.label) {
+                buttonEl.innerHTML = config.label;
+              }
+              if (config.enabled) {
+                buttonEl.disabled = !config.enabled;
+              }
+            }
+            break;
+          }
+
           case 'console': {
             const logsEl = el.querySelector('.console-logs');
             if (logsEl) {
@@ -2887,7 +2904,7 @@
         }
 
         // Visual update indicator (small dot flash)
-        flashIndicator(el);
+   //     flashIndicator(el);
       } catch (e) {
         // On any error, safe fallback to re-render
         el.outerHTML = renderCard(card);

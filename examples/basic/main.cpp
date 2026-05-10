@@ -137,7 +137,7 @@ void setup() {
     
     // Multi-series line chart (Temperature + Humidity on same chart)
     // This chart spans 2 columns for a wider view
-    ChartCard* multiChart = dashboard.addChartCard("multi-chart", "Temp & Humidity", ChartType::LINE, 20);
+    ChartCard* multiChart = dashboard.addChartCard("multi-chart", "Temp & Humidity", "", ChartType::LINE, 20);
     int tempSeriesIdx = multiChart->addSeries("Temperature", "primary");
     int humidSeriesIdx = multiChart->addSeries("Humidity", "info");
     multiChart->setWeight(10);  // First chart
@@ -145,13 +145,13 @@ void setup() {
     dashboard.addCardToGroup("charts", "multi-chart");
     
     // Single-series area chart (backwards compatible)
-    ChartCard* cpuChart = dashboard.addChartCard("cpu-chart", "CPU History", ChartType::AREA, 20);
+    ChartCard* cpuChart = dashboard.addChartCard("cpu-chart", "CPU History", "", ChartType::AREA, 20);
     cpuChart->setVariant(CardVariant::WARNING);
     cpuChart->setWeight(20);  // Second chart
     dashboard.addCardToGroup("charts", "cpu-chart");
     
     // Multi-series bar chart - spans 2x1
-    ChartCard* barChart = dashboard.addChartCard("bar-chart", "Daily Usage", ChartType::BAR, 10);
+    ChartCard* barChart = dashboard.addChartCard("bar-chart", "Daily Usage", "", ChartType::BAR, 10);
     int readSeriesIdx = barChart->addSeries("Reads", "success");
     int writeSeriesIdx = barChart->addSeries("Writes", "warning");
     barChart->setWeight(30);  // Third chart
@@ -230,7 +230,7 @@ void setup() {
     // DROPDOWN CARD - Select menu
     // ========================================
     
-    DropdownCardImpl* modeDropdown = dashboard.addDropdownCard("wifi-mode", "WiFi Mode", "Select mode...");
+    DropdownCard* modeDropdown = dashboard.addDropdownCard("wifi-mode", "WiFi Mode", "Select mode...");
     modeDropdown->addOption("sta", "Station (Client)");
     modeDropdown->addOption("ap", "Access Point");
     modeDropdown->addOption("apsta", "AP + Station");
@@ -298,7 +298,7 @@ void setup() {
     // BUTTON CARDS - Simple action buttons
     // ========================================
     
-    ButtonCardImpl* saveBtn = dashboard.addButtonCard("save", "Settings", "Save Configuration", []() {
+    ButtonCard* saveBtn = dashboard.addButtonCard("save", "Settings", "Save Configuration", []() {
         Serial.println("Save button clicked!");
     });
     saveBtn->setVariant(CardVariant::PRIMARY);
