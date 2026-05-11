@@ -79,6 +79,7 @@ enum class CardType {
     TIME,
     LOCATION,
     STATUS,
+    STATUS_TOGGLE,
     CONSOLE
 };
  
@@ -126,6 +127,7 @@ enum class CardType {
      POWER,
      SYNC,
      CLOUD,
+     RAIN,
      LOCK,
      UNLOCK
  };
@@ -166,6 +168,7 @@ public:
      
      // Public access for update helpers
      String getVariantString() { return variantToString(variant); }
+     String getVariantString(CardVariant v) { return variantToString(v); }
      String getIconString(StatusIcon i) { return iconToString(i); }
      
  protected:
@@ -192,6 +195,7 @@ public:
              case CardType::OTA: return "ota";
              case CardType::GAUGE: return "gauge";
              case CardType::TOGGLE: return "toggle";
+             case CardType::STATUS_TOGGLE: return "status-toggle";
              case CardType::SLIDER: return "slider";
              case CardType::LINK: return "link";
              case CardType::TIMEZONE: return "timezone";
@@ -234,6 +238,7 @@ public:
              case StatusIcon::POWER: return "power";
              case StatusIcon::SYNC: return "sync";
              case StatusIcon::CLOUD: return "cloud";
+             case StatusIcon::RAIN: return "rain";
              case StatusIcon::LOCK: return "lock";
              case StatusIcon::UNLOCK: return "unlock";
              default: return "info";
@@ -876,6 +881,49 @@ public:
      }
      
      void setValue(bool val) { value = val; }
+ };
+
+ /**
+  * StatusToggle Card - Switch with On/Off label and icon
+  */
+ class StatusToggleCard : public DashboardCard {
+ public:
+     bool value;
+     String labelOn;
+     String labelOff;
+     StatusIcon iconOn;
+     StatusIcon iconOff;
+     ToggleCallback onChange;
+     
+     StatusToggleCard(const String& id, const String& title, const String& labelOn = "", const String& labelOff = "", StatusIcon iconOn = StatusIcon::INFO, StatusIcon iconOff = StatusIcon::ERROR, bool defaultValue = false)
+         : DashboardCard(id, CardType::STATUS_TOGGLE, title), labelOn(labelOn), labelOff(labelOff), iconOn(iconOn), iconOff(iconOff), value(defaultValue) {}
+     
+    void toJson(JsonObject& card) override {
+        card["id"] = id;
+        card["type"] = typeToString(type);
+        card["weight"] = weight;
+        JsonObject config = card["config"].to<JsonObject>();
+        config["title"] = title;
+        config["label"] = value ? labelOn : labelOff;
+        config["value"] = value;
+        config["icon"] = iconToString(value ? iconOn : iconOff);
+        config["variant"] = variantToString(variant);
+        if (sizeX > 1) config["sizeX"] = sizeX;
+        if (sizeY > 1) config["sizeY"] = sizeY;
+    }
+     
+    void handleAction(const String& action, JsonObject& data) override {
+        if (action == "change" && !data["value"].isNull()) {
+            value = data["value"].as<bool>();
+            if (onChange) {
+                onChange(value);
+            }
+        }
+    }
+    
+    void setValue(bool val) {
+        value = val;
+    }
  };
  
  /**
@@ -1597,6 +1645,13 @@ using ESPDashboard = ESPDashboardPlus;
          return card;
      }
      
+     StatusToggleCard* addStatusToggleCard(const String& id, const String& title, const String& labelOn = "", 
+        const String& labelOff = "", StatusIcon iconOn = StatusIcon::INFO, StatusIcon iconOff = StatusIcon::ERROR, bool defaultValue = false) {
+         StatusToggleCard* card = new StatusToggleCard(id, title, labelOn, labelOff, iconOn, iconOff, defaultValue);
+         _cards[id] = card;
+         return card;
+     }
+     
      SliderCard* addSliderCard(const String& id, const String& title, int min = 0, int max = 100, int step = 1, const String& unit = "") {
          SliderCard* card = new SliderCard(id, title, min, max, step, unit);
          _cards[id] = card;
@@ -1808,6 +1863,21 @@ using ESPDashboard = ESPDashboardPlus;
              JsonDocument doc;
              JsonObject data = doc.to<JsonObject>();
              data["value"] = value;
+             broadcastUpdate(id, data);
+         }
+     }
+     
+     void updateStatusToggleCard(const String& id, bool value) {
+         StatusToggleCard* card = static_cast<StatusToggleCard*>(getCard(id));
+         if (card && card->type == CardType::STATUS_TOGGLE) {
+             card->setValue(value);
+             
+             JsonDocument doc;
+             JsonObject data = doc.to<JsonObject>();
+             data["value"] = value;
+             data["label"] = value ? card->labelOn : card->labelOff;
+             data["icon"] = value ? card->getIconString(card->iconOn) : card->getIconString(card->iconOff);
+             data["variant"] = value ? card->getVariantString() : card->getVariantString(CardVariant::SECONDARY);
              broadcastUpdate(id, data);
          }
      }

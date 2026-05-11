@@ -2028,6 +2028,8 @@
     // Tab configuration (set by server)
     let enableOTA = true;
     let enableConsole = true;
+    
+    const iconMap = { wifi: '📶', check: '✓', error: '✕', warning: '⚠', info: 'ℹ', power: '⚡', sync: '🔄', cloud: '☁️', rain: '🌧️',  lock: '🔒', unlock: '🔓' };
 
     function connect() {
       // Close existing connection if any
@@ -2301,7 +2303,6 @@
           `;
 
         case 'status':
-          const iconMap = { wifi: '📶', check: '✓', error: '✕', warning: '⚠', info: 'ℹ', power: '⚡', sync: '🔄', cloud: '☁', lock: '🔒', unlock: '🔓' };
           return `
             <div class="card" data-id="${id}" style="${sizeStyle}"><div class="update-indicator"></div>
               <div class="card-title">${config.title || 'Status'}</div>
@@ -2447,6 +2448,24 @@
                 <div>
                   <div class="card-title">${config.title || 'Toggle'}</div>
                   <div style="font-size:1.1rem;font-weight:600;margin-top:6px">${config.label || ''}</div>
+                </div>
+                <div class="toggle ${config.value ? 'on' : ''}" onclick="toggleSwitch('${id}')">
+                  <div class="toggle-knob"></div>
+                </div>
+              </div>
+            </div>
+          `;
+
+        case 'status-toggle':
+          return `
+            <div class="card" data-id="${id}" style="${sizeStyle}"><div class="update-indicator"></div>
+              <div class="toggle-container">
+                <div>
+                  <div class="card-title">${config.title || 'Toggle'}</div>
+                  <div style="font-size:1.1rem;font-weight:600;margin-top:6px">${config.label || ''}</div>
+                </div>
+                <div class="status-icon ${config.variant || 'primary'}" style="position:absolute;left:50%;transform:translateX(-50%)">
+                  ${config.icon ? (iconMap[config.icon] || config.icon) : '●'}
                 </div>
                 <div class="toggle ${config.value ? 'on' : ''}" onclick="toggleSwitch('${id}')">
                   <div class="toggle-knob"></div>
@@ -2801,7 +2820,6 @@
             if (msg) msg.textContent = card.config.message || '';
             if (icon) {
               icon.className = 'status-icon ' + (card.config.variant || 'primary');
-              const iconMap = { wifi: '📶', check: '✓', error: '✕', warning: '⚠', info: 'ℹ', power: '⚡', sync: '🔄', cloud: '☁', lock: '🔒', unlock: '🔓' };
               icon.innerHTML = card.config.icon ? (iconMap[card.config.icon] || card.config.icon) : '●';
             }
             break;
@@ -3591,6 +3609,7 @@
     function setDashboardTitle(title, subtitle) {
       if (title) {
         dashboardTitle = title;
+        document.title = title;
         const titleEl = document.querySelector('.logo h1');
         if (titleEl) titleEl.textContent = title;
       }
